@@ -47,11 +47,6 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
     @IBAction func detect(_ sender: Any) {
         detectFaces()
         
-        let faceImage = CIImage(image: imageView.image!)
-        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        let faces = faceDetector?.features(in: faceImage!) as! [CIFaceFeature]
-        
-        
         
     }
     
@@ -60,16 +55,33 @@ class ViewController: UIViewController, UINavigationControllerDelegate, UIImageP
         let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
         let faces = faceDetector?.features(in: faceImage!) as! [CIFaceFeature]
         print("Number of faces: \(faces.count)")
-        if faces.count == 1 {
         
-            numberlabel.text = "Number of faces: \(faces.count)"
+        let transformScale = CGAffineTransform(scaleX: 1, y: -1)
+        let transform = transformScale.translatedBy(x: 0, y: -faceImage!.extent.height)
+        
+        for face in faces {
+            var faceBounds = face.bounds.applying(transform)
+            print(faceBounds)
+            let imageViewSize = imageView.bounds.size
+            let scale = min(imageViewSize.width / faceImage!.extent.width,
+                            imageViewSize.height / faceImage!.extent.height)
+            
+            let dx = (imageViewSize.width - faceImage!.extent.width * scale) / 2
+            let dy = (imageViewSize.height - faceImage!.extent.height * scale) / 2
+            
+            faceBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
+            faceBounds.origin.x += dx
+            faceBounds.origin.y += dy
+            
+            let box = UIView(frame: faceBounds)
+            box.layer.borderColor = UIColor.red.cgColor
+            box.layer.borderWidth = 2
+            box.backgroundColor = UIColor.clear
+            imageView.addSubview(box)
+            
         }
         
-        else {
-            numberlabel.text = "Number of faces: \(faces.count). Please find an image of a single face"
-        }
-
-        }
+    }
     
     
     
