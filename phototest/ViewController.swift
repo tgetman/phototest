@@ -8,99 +8,159 @@
 
 import UIKit
 import Vision
-import CoreImage
+import ImageIO
 
-class ViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate  {
-
-    @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var chooseButton: UIButton!
+@available(iOS 11.0, *)
+class ViewController: UIViewController ,UIImagePickerControllerDelegate,UINavigationControllerDelegate  {
     
-    let imagePicker = UIImagePickerController()
+    //MARK - Variables
+    @IBOutlet weak var originalImageView: UIImageView!
+    @IBOutlet weak var analyzedImageView: UIImageView!
+    @IBOutlet weak var loadingLbl: UILabel!
     
-    @IBAction func btnClicked(_ sender: Any) {
+    var imageToAnalyis : CIImage?
+    
+    lazy var rectangleBoxRequest: VNDetectRectanglesRequest = {
+        return VNDetectRectanglesRequest(completionHandler:self.handleRectangles)
+    }()
+    
+   
+    
+    lazy var faceDetectionRequest : VNDetectFaceRectanglesRequest = {
+        let faceRequest = VNDetectFaceRectanglesRequest(completionHandler:self.handleFaceDetection)
+        return faceRequest
+    }()
+    
+    
+    //MARK - Action Methods
+    @IBAction func addPhotos(_ sender: Any) {
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.sourceType = .photoLibrary
+        present(picker, animated: true)
+    }
+    
+    
+    //MARK - UIImage Picker Delegate Method
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        picker.dismiss(animated: true)
         
-        if UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum){
-            print("Button capture")
-            
-            imagePicker.delegate = self
-            imagePicker.sourceType = .savedPhotosAlbum;
-            imagePicker.allowsEditing = false
-            
-            self.present(imagePicker, animated: true, completion: nil)
+        guard let uiImage = info[UIImagePickerControllerOriginalImage] as? UIImage
+            else { fatalError("no image from image picker") }
+        guard let ciImage = CIImage(image: uiImage)
+            else { fatalError("can't create CIImage from UIImage") }
+        
+        imageToAnalyis = ciImage.applyingOrientation(Int32(uiImage.imageOrientation.rawValue))
+        
+        // Show the image in the UI.
+        originalImageView.image = uiImage
+        
+        // Create vision image request
+        let handler = VNImageRequestHandler(ciImage: ciImage, orientation: Int32(uiImage.imageOrientation.rawValue))
+        self.loadingLbl.isHidden = false
+        
+        DispatchQueue.global(qos: .userInteractive).async {
+            do {
+                //Try performing Individual request
+                
+                //                 try handler.perform([self.rectangleBoxRequest])
+                //                 try handler.perform([self.textRectangleRequest])
+                //                 try handler.perform([self.faceDetectionRequest])
+                //                 try handler.perform([self.faceLandMarkRequest])
+                
+                //Stack Vision Request
+                try handler.perform([self.faceDetectionRequest,self.rectangleBoxRequest])
+                
+            } catch {
+                print(error)
+            }
         }
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            imageView.image = image
-        } else{
-            print("Something went wrong")
+    
+    //MARK - Instance Methods
+    func CreateBoxView(withColor : UIColor) -> UIView {
+        let view = UIView()
+        view.layer.borderColor = withColor.cgColor
+        view.layer.borderWidth = 2
+        view.backgroundColor = UIColor.clear
+        return view
+    }
+    
+    
+    //Convert Vision Frame to UIKit Frame
+    func transformRect(fromRect: CGRect , toViewRect :UIView) -> CGRect {
+        
+        var toRect = CGRect()
+        toRect.size.width = fromRect.size.width * toViewRect.frame.size.width
+        toRect.size.height = fromRect.size.height * toViewRect.frame.size.height
+        toRect.origin.y =  (toViewRect.frame.height) - (toViewRect.frame.height * fromRect.origin.y )
+        toRect.origin.y  = toRect.origin.y -  toRect.size.height
+        toRect.origin.x =  fromRect.origin.x * toViewRect.frame.size.width
+        
+        return toRect
+    }
+    
+    
+    
+    
+    //MARK - Handle Vision Requests
+    
+
+    func handleFaceDetection (request: VNRequest, error: Error?) {
+        guard let observations = request.results as? [VNFaceObservation]
+            else { print("unexpected result type from VNFaceObservation")
+                return }
+        guard observations.first != nil else {
+            return
         }
-        
-        
-        self.dismiss(animated: true, completion: nil)
-    }
-
-
-    @IBOutlet weak var numberlabel: UILabel!
-    
-    @IBAction func detect(_ sender: Any) {
-        detectFaces()
-        
-        
-    }
-    
-    func detectFaces() {
-        let faceImage = CIImage(image: imageView.image!)
-        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        let faces = faceDetector?.features(in: faceImage!) as! [CIFaceFeature]
-        print("Number of faces: \(faces.count)")
-        
-        let transformScale = CGAffineTransform(scaleX: 1, y: -1)
-        let transform = transformScale.translatedBy(x: 0, y: -faceImage!.extent.height)
-        
-        for face in faces {
-            var faceBounds = face.bounds.applying(transform)
-            print(faceBounds)
-            let imageViewSize = imageView.bounds.size
-            let scale = min(imageViewSize.width / faceImage!.extent.width,
-                            imageViewSize.height / faceImage!.extent.height)
-            
-            let dx = (imageViewSize.width - faceImage!.extent.width * scale) / 2
-            let dy = (imageViewSize.height - faceImage!.extent.height * scale) / 2
-            
-            faceBounds.applying(CGAffineTransform(scaleX: scale, y: scale))
-            faceBounds.origin.x += dx
-            faceBounds.origin.y += dy
-            
-            let box = UIView(frame: faceBounds)
-            box.layer.borderColor = UIColor.red.cgColor
-            box.layer.borderWidth = 2
-            box.backgroundColor = UIColor.clear
-            imageView.addSubview(box)
-            
+        // Show the pre-processed image
+        DispatchQueue.main.async {
+            self.analyzedImageView.subviews.forEach({ (s) in
+                s.removeFromSuperview()
+            })
+            for face in observations
+            {
+                let view = self.CreateBoxView(withColor: UIColor.red)
+                view.frame = self.transformRect(fromRect: face.boundingBox, toViewRect: self.analyzedImageView)
+                self.analyzedImageView.image = self.originalImageView.image
+                self.analyzedImageView.addSubview(view)
+                self.loadingLbl.isHidden = true
+                
+            }
         }
+    }
+    
+    
+    func handleRectangles(request: VNRequest, error: Error?) {
         
+        guard let observations = request.results as? [VNRectangleObservation]
+            else { print("unexpected result type from VNDetectRectanglesRequest")
+                return
+        }
+        guard observations.first != nil else {
+            return
+        }
+        // Show the pre-processed image
+        DispatchQueue.main.async {
+            self.analyzedImageView.subviews.forEach({ (s) in
+                s.removeFromSuperview()
+            })
+            for rect in observations
+            {
+                let view = self.CreateBoxView(withColor: UIColor.cyan)
+                view.frame = self.transformRect(fromRect: rect.boundingBox, toViewRect: self.analyzedImageView)
+                self.analyzedImageView.image = self.originalImageView.image
+                self.analyzedImageView.addSubview(view)
+                self.loadingLbl.isHidden = true
+            }
+        }
     }
     
     
     
     
     
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-    
-    
-
-
 }
+
 
