@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 import CoreImage
 
+@available(iOS 11.0, *)
 class secondViewController: UIViewController {
     
     @IBOutlet weak var image1: UIImageView!
@@ -19,34 +20,92 @@ class secondViewController: UIViewController {
     @IBOutlet weak var image5: UIImageView!
     @IBOutlet weak var image6: UIImageView!
     
+    fileprivate var image11: UIImage! {
+        didSet {
+            image1?.image = image11
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image11) { (resultImage1) in
+                    DispatchQueue.main.async {
+                        self.image1?.image = resultImage1
+                    }
+                }
+            }
+        }
+    }
     
+    fileprivate var image12: UIImage! {
+        didSet {
+            image2?.image = image12
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image12) { (resultImage2) in
+                    DispatchQueue.main.async {
+                        self.image2?.image = resultImage2
+                    }
+                }
+            }
+        }
+    }
     
+    fileprivate var image13: UIImage! {
+        didSet {
+            image3?.image = image13
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image13) { (resultImage3) in
+                    DispatchQueue.main.async {
+                        self.image3?.image = resultImage3
+                    }
+                }
+            }
+        }
+    }
     
-
-    @IBAction func detect(_ sender: Any) {
-        detectFaces()
-        let faceImage = CIImage(image: image1.image!)
-        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        let faces = faceDetector?.features(in: faceImage!) as! [CIFaceFeature]
-        
-        
-        
-        
+    fileprivate var image14: UIImage! {
+        didSet {
+            image4?.image = image14
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image14) { (resultImage4) in
+                    DispatchQueue.main.async {
+                        self.image4?.image = resultImage4
+                    }
+                }
+            }
+        }
+    }
+    
+    fileprivate var image15: UIImage! {
+        didSet {
+            image5?.image = image15
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image15) { (resultImage5) in
+                    DispatchQueue.main.async {
+                        self.image5?.image = resultImage5
+                    }
+                }
+            }
+        }
+    }
+    
+    fileprivate var image16: UIImage! {
+        didSet {
+            image6?.image = image16
+            let faceDetector = FaceDetector()
+            DispatchQueue.global().async {
+                faceDetector.highlightFaces(for: self.image16) { (resultImage6) in
+                    DispatchQueue.main.async {
+                        self.image6?.image = resultImage6
+                        
+                    }
+                }
+            }
+        }
     }
     
     
-    func detectFaces() {
-        let faceImage = CIImage(image: image1.image!)
-        let faceDetector = CIDetector(ofType: CIDetectorTypeFace, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        let faces = faceDetector?.features(in: faceImage!) as! [CIFaceFeature]
-    
-    
-    }
-    
-//    func checkFaces() {
-//        if detectFaces().faces = ViewController.faces {
-    
-//        }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,6 +117,13 @@ class secondViewController: UIViewController {
         image4.image = #imageLiteral(resourceName: "photo4")
         image5.image = #imageLiteral(resourceName: "photo5")
         image6.image = #imageLiteral(resourceName: "photo6")
+        
+        image11 = UIImage(named: "image1")
+        image12 = UIImage(named: "image2")
+        image13 = UIImage(named: "image3")
+        image14 = UIImage(named: "image4")
+        image15 = UIImage(named: "image5")
+        image16 = UIImage(named: "image6")
         
 
         
