@@ -22,36 +22,23 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8ba-au-Wov">
-                                <rect key="frame" x="30" y="386" width="315" height="197"/>
+                                <rect key="frame" x="30" y="82" width="315" height="197"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Xzz-vb-vLo">
-                                <rect key="frame" x="130" y="287" width="115" height="30"/>
+                                <rect key="frame" x="130" y="428" width="115" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Upload Photo"/>
                                 <connections>
-                                    <action selector="addPhotos:" destination="BYZ-38-t0r" eventType="touchUpInside" id="s7V-nb-7nh"/>
+                                    <action selector="selectImage:" destination="BYZ-38-t0r" eventType="touchUpInside" id="g82-hZ-sLt"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Analyzing" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8YM-H9-Vij">
-                                <rect key="frame" x="148" y="219" width="78" height="21"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cdS-CJ-4pA">
-                                <rect key="frame" x="30" y="57" width="315" height="183"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                     <tabBarItem key="tabBarItem" title="Item" id="xUt-3g-B0B"/>
                     <connections>
-                        <outlet property="analyzedImageView" destination="cdS-CJ-4pA" id="bm9-yx-reZ"/>
-                        <outlet property="loadingLbl" destination="8YM-H9-Vij" id="u9q-l0-Gd6"/>
-                        <outlet property="originalImageView" destination="8ba-au-Wov" id="2YI-kT-X0F"/>
+                        <outlet property="imageView" destination="8ba-au-Wov" id="SYG-VN-5l3"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -116,9 +103,6 @@
                                 <rect key="frame" x="303" y="8" width="46" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="detect"/>
-                                <connections>
-                                    <action selector="detect:" destination="mLX-eI-g7A" eventType="touchUpInside" id="yCd-eP-RbH"/>
-                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
